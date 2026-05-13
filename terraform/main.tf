@@ -127,6 +127,7 @@ resource "aws_instance" "demo" {
 }
 
 # Added 2026-05-13 — triggers the action for the permanent demo PR linked from the README.
+# Updated 2026-05-13 — re-trigger after v0.2.6 bump (R31.9 hardening). Issue #19.
 resource "aws_s3_bucket" "logs" {
   bucket = "tf-analyze-demo-logs"
 }
