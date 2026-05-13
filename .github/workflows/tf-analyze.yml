@@ -25,4 +25,4 @@ jobs:
           post-pr-comment: true                # inline `suggestion` blocks on every PR
           compliance-framework: owasp_iac      # optional — adds a collapsible compliance gap report
           attack-graph: true                   # optional — embeds Mermaid attack graph in PR summary
-          ref: v0.2.1
+          ref: v0.2.4
