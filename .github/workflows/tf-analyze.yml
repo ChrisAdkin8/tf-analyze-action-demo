@@ -22,6 +22,7 @@ jobs:
       - uses: ChrisAdkin8/tf-analyze@v1
         with:
           fail-on: HIGH
+          mode: static                         # always scan the full fixture, even on PRs (default `auto` would diff-mode and only flag new findings)
           post-pr-comment: true                # inline `suggestion` blocks on every PR
           compliance-framework: owasp_iac      # optional — adds a collapsible compliance gap report
           attack-graph: true                   # optional — embeds Mermaid attack graph in PR summary
