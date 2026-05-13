@@ -18,10 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # needed so --mode diff (default on PRs) can see origin/main
 
       - uses: ChrisAdkin8/tf-analyze@v1
         with:
           fail-on: HIGH
+          mode: static                         # demo PRs show the full fixture's findings, not only what changed (see issue #19)
           post-pr-comment: true                # inline `suggestion` blocks on every PR
           compliance-framework: owasp_iac      # optional — adds a collapsible compliance gap report
           attack-graph: true                   # optional — embeds Mermaid attack graph in PR summary
