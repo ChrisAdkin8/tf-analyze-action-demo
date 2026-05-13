@@ -125,3 +125,8 @@ resource "aws_instance" "demo" {
     encrypted = false
   }
 }
+
+# Added 2026-05-13 — triggers the action for the permanent demo PR linked from the README.
+resource "aws_s3_bucket" "logs" {
+  bucket = "tf-analyze-demo-logs"
+}
