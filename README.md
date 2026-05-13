@@ -140,6 +140,12 @@ A single auto-upserted comment at the top of the PR carrying the engine's `--for
 
 Score is high on a PR because `mode: auto` resolves to **diff mode** — only *new* findings count, not the pre-existing baseline of insecure resources. On the post-merge `push: main` run the same workflow runs in **static mode** and scores 0 (F) on the full corpus.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ChrisAdkin8/tf-analyze/main/docs/images/github-action-findings.png" alt="tf-analyze bot comment rendered on the demo PR — score banner, top findings table, top fix, attack graph, compliance" width="640" />
+  <br />
+  <sub>Rendered version of the comment above, captured from <a href="https://github.com/ChrisAdkin8/tf-analyze-action-demo/pull/1">PR #1</a>.</sub>
+</p>
+
 ### 2. The attack graph (Mermaid)
 
 GitHub renders Mermaid inline in any Markdown block. The collapsed `<details>` from the bot comment, expanded, looks like this — and this is the actual graph from the demo's fixture:
@@ -221,6 +227,12 @@ The narrative (`*Adversarial scenario*`) is the engine's `adversarial_scenario` 
 3. The line must be inside the PR's diff hunks (i.e. a line you actually touched in this PR).
 
 Mismatch on any of those and the suggestion is silently skipped — the bot comment's footer reports a count so you know how many made it.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ChrisAdkin8/tf-analyze/main/docs/images/github-action-remediation.png" alt="GitHub PR inline suggestion block from tf-analyze with a Commit suggestion button" width="640" />
+  <br />
+  <sub>The <code>suggestion</code> block as GitHub renders it — <code>OPS-AWS-TAGS-001</code> from <a href="https://github.com/ChrisAdkin8/tf-analyze-action-demo/pull/1">PR #1</a>. Click <strong>Commit suggestion</strong> on the right to merge the <code>fix_hcl</code> patch into the branch.</sub>
+</p>
 
 ### 4. Code Scanning alerts (SARIF)
 
