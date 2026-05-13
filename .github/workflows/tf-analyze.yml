@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # needed so --mode diff (default on PRs) can see origin/main
+          fetch-depth: 0   # belt-and-braces; v0.2.6+ auto-fetches the base ref for --mode diff
 
       - uses: ChrisAdkin8/tf-analyze@v1
         with:
@@ -28,4 +28,4 @@ jobs:
           post-pr-comment: true                # inline `suggestion` blocks on every PR
           compliance-framework: owasp_iac      # optional — adds a collapsible compliance gap report
           attack-graph: true                   # optional — embeds Mermaid attack graph in PR summary
-          ref: v0.2.5
+          ref: v0.2.6
