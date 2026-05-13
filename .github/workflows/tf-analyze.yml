@@ -1,0 +1,28 @@
+name: tf-analyze
+
+on:
+  pull_request:
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/tf-analyze.yml'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ChrisAdkin8/tf-analyze@v1
+        with:
+          fail-on: HIGH
+          post-pr-comment: true                # inline `suggestion` blocks on every PR
+          compliance-framework: owasp_iac      # optional — adds a collapsible compliance gap report
+          attack-graph: true                   # optional — embeds Mermaid attack graph in PR summary
+          ref: v0.2.1
