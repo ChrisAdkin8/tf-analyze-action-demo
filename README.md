@@ -44,7 +44,7 @@ That's the entire demo. The rest of this README explains the moving parts.
     post-pr-comment: true
     compliance-framework: owasp_iac
     attack-graph: true
-    ref: v0.2.4
+    ref: v0.2.5
 ```
 
 The workflow also declares:
@@ -70,7 +70,7 @@ Every input the action accepts, with the demo's value and what other values do. 
 | `upload-sarif` | `true` | _(default)_ | Uploads `tf-analyze.sarif` to GitHub Code Scanning. Requires `permissions: security-events: write`. |
 | `upload-html-artifact` | `true` | _(default)_ | Uploads the HTML report as a 30-day workflow artifact. |
 | `compliance-framework` | _(empty)_ | `owasp_iac` | Optional compliance gap report. Allowed: `cis`, `pci_dss`, `soc2`, `owasp_iac`, `all`. Adds a collapsible compliance section to the PR comment. Validated — an unknown framework fails the action with `::error::`. |
-| `ref` | _(empty)_ | `v0.2.4` | Shorthand for the image tag. `ref: v0.2.4` is equivalent to `image: ghcr.io/chrisadkin8/tf-analyze:0.2.4` — the leading `v` is stripped before building the docker tag (R31.6), so both `v0.2.4` and `0.2.4` work. Non-semver values (`main`, `latest`) pass through untouched. **Mutually exclusive with `image:`.** |
+| `ref` | _(empty)_ | `v0.2.5` | Shorthand for the image tag. `ref: v0.2.5` is equivalent to `image: ghcr.io/chrisadkin8/tf-analyze:0.2.5` — the leading `v` is stripped before building the docker tag (R31.6), so both `v0.2.5` and `0.2.5` work. Non-semver values (`main`, `latest`) pass through untouched. **Mutually exclusive with `image:`.** |
 | `image` | `ghcr.io/chrisadkin8/tf-analyze:latest` | _(default)_ | Engine Docker image. Override to pin (or to test a fork). Mutually exclusive with `ref:`. |
 | `extra-args` | _(empty)_ | _(default)_ | CLI flags appended verbatim to `detect.py`. Read-then-tokenized via `read -ra` (no shell-substitution). Useful for `--check-registry`, `--oscal PATH`, `--pdf-output PATH`. |
 
@@ -242,15 +242,24 @@ Mismatch on any of those and the suggestion is silently skipped — the bot comm
 
 Share the HTML externally (Slack, email, ticketing) when the PR comment isn't enough.
 
-### Known gap: the compliance section
+### Compliance gap section (in the PR comment)
 
-`compliance-framework: owasp_iac` is wired through `action.yml` and the engine *does* generate the gap report — but the engine's `--format pr-summary` shape does **not** currently embed the compliance section in the bot comment. The full gap report is present in:
+When `compliance-framework: <name>` is set (the demo uses `owasp_iac`), the bot comment grows a collapsible compliance block right after the attack graph. Example shape from the demo PR's bot comment:
 
-- The HTML artifact (always)
-- The JSON report (`tf-analyze-findings.json`, in `summary.compliance`)
-- Anything you do with `extra-args: '--compliance --compliance-framework owasp_iac --pdf-output report.pdf'`
+```markdown
+<details><summary>📋 Compliance (owasp_iac): 🔴 4/9 PASS · 5 FAIL</summary>
 
-This is a tracked engine gap, not a configuration issue with the demo. If you want the compliance section to render *in the PR comment*, follow [upstream issue tracking](https://github.com/ChrisAdkin8/tf-analyze/issues) or use the install-from-source workflow template at [`integrations/github-action.yml`](https://github.com/ChrisAdkin8/tf-analyze/blob/main/integrations/github-action.yml), which has its own github-script step that explicitly embeds `tf-analyze-compliance.txt` into the PR comment.
+| Control | Status | Mapped rules |
+|---|---|---|
+| `Develop and Distribute / Secrets Detection` | ❌ FAIL | **[`SEC-SECRETS-001`](…)**, [`SEC-SENSITIVE-001`](…), … |
+| `Develop and Distribute / Open Source Dependency Scanning` | ✅ PASS | [`MOD-PIN-001`](…), [`MOD-STALE-001`](…), … |
+| …
+</details>
+```
+
+Failures sort to the top so reviewers see the most actionable rows first. Rules that fired are **bolded**; all rule IDs link to canonical docs pages. The threshold indicator is `🟢` ≥80% PASS, `🟡` 50–79%, `🔴` <50%.
+
+This block was added in [R31.8](https://github.com/ChrisAdkin8/tf-analyze/blob/main/CHANGELOG.md#round-318--pr-summary-compliance-section--safety-net-wrapper--2026-05-13) (issue [#12](https://github.com/ChrisAdkin8/tf-analyze/issues/12)). Earlier action versions (`v0.2.4` and below) had the input wired through but the engine never embedded the rendered section in `pr-summary`. Pin `ref: v0.2.5` or later to see it.
 
 ---
 
@@ -264,7 +273,7 @@ Every input is reflected back as a step output you can reference from downstream
   with:
     fail-on: HIGH
     post-pr-comment: true
-    ref: v0.2.4
+    ref: v0.2.5
 
 # Surface the score to Slack on main pushes
 - name: Notify Slack
@@ -347,9 +356,9 @@ Three options, in increasing order of permanence:
 
 The workflow takes 60–120 seconds per run (cold cache 90–120s, warm cache 60–80s). On a free public repo that's free. On a private repo, the cost is ~$0.008 per run at Linux pricing — pull this number down further by adding aggressive `paths:` filters to your trigger so the action only runs when `terraform/**` actually changes.
 
-**Q: Why is the v0.2.4 docker tag stripped of the `v` (as `:0.2.4` not `:v0.2.4`)?**
+**Q: Why is the docker tag stripped of the `v` (as `:0.2.5` not `:v0.2.5`)?**
 
-`docker/metadata-action` (the official Docker image-tagging action) strips the `v` from semver tags by default — `:0.2.4`, `:0.2`, `:latest`. The R31.6 fix to the action made `ref:` accept *both* forms (`v0.2.4` and `0.2.4`) so you can paste whichever form you copied from. See [upstream CHANGELOG R31.6](https://github.com/ChrisAdkin8/tf-analyze/blob/main/CHANGELOG.md#round-316--ref-accepts-both-v023-and-023-forms--2026-05-13) for the underlying mechanic.
+`docker/metadata-action` (the official Docker image-tagging action) strips the `v` from semver tags by default — `:0.2.5`, `:0.2`, `:latest`. The R31.6 fix to the action made `ref:` accept *both* forms (`v0.2.5` and `0.2.5`) so you can paste whichever form you copied from. See [upstream CHANGELOG R31.6](https://github.com/ChrisAdkin8/tf-analyze/blob/main/CHANGELOG.md#round-316--ref-accepts-both-v023-and-023-forms--2026-05-13) for the underlying mechanic.
 
 ---
 
